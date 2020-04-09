@@ -1,6 +1,8 @@
 #include <iostream>
 #include <cstdio>
 #include <cstring>
+#include <string>
+#include <vector>
 #include <cstdlib>
 #include <unistd.h>
 #include <sys/types.h>
@@ -38,7 +40,8 @@ int takeInput(std::string str)
 	buf = readline("\n>>> ");
 	if (buf.length())
 	{
-//		add_history(buf); // currently throws error
+		std::vector<char*> buf_v(buf.begin(), buf.end());
+		add_history(buf_v); // currently throws error
 		str = buf;
 		return 0;
 	}
@@ -51,9 +54,12 @@ int takeInput(std::string str)
 //  Function to print current directory
 void printDir()
 {
-	char cwd[1024];
-	getcwd(cwd, sizeof(cwd));
-	printf("\nDir: %s", cwd);
+	//char cwd[1024];
+	//getcwd(cwd, sizeof(cwd));
+	std::string cwd;
+	std::vector<char*> cwd_v(cwd.begin(), cwd.end());
+	getcwd(cwd_v, sizeof(cwd_v));
+	std::cout << "\nDir: " << cwd_v;
 }
 
 // Function where the system command is executed
