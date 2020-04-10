@@ -26,8 +26,9 @@ void init_shell()
 	std::cout << "************\n"
 		      << "    cush    \n"
 		      << "************\n";
-	std::string username = getenv("USER");
-	std::cout << "\nUSER is " << username << "\n";
+	std::vector<char *> username;
+	username.push_back(getenv("USER"));
+	std::cout << "\nUSER is " << std::string(std::begin(username), std::end(username)) << "\n";
 	sleep(1);
 	clear();
 }
@@ -37,12 +38,14 @@ int takeInput(std::string str)
 {
 	std::string buf;
 
-	buf = readline("\n>>> ");
-	if (buf.length())
+	buf = (readline("\n>>> "));
+	if (buf.size())
 	{
-		std::vector<char*> buf_v(buf.begin(), buf.end());
-		add_history(buf_v); // currently throws error
+		const char* temp = new char;
+		temp = buf.c_str();
+		add_history(temp);
 		str = buf;
+		delete temp;
 		return 0;
 	}
 	else
@@ -54,30 +57,30 @@ int takeInput(std::string str)
 //  Function to print current directory
 void printDir()
 {
-	//char cwd[1024];
-	//getcwd(cwd, sizeof(cwd));
 	std::string cwd;
-	std::vector<char*> cwd_v(cwd.begin(), cwd.end());
-	getcwd(cwd_v, sizeof(cwd_v));
-	std::cout << "\nDir: " << cwd_v;
+	char *temp = new char;
+	getcwd(temp, sizeof(temp));
+	cwd = temp;
+	delete temp;
+	std::cout << "\nDir: " << cwd;
 }
 
 // Function where the system command is executed
-void execArgs(char** parsed)
+void execArgs(std::vector<char **>parsed)
 {
 	// Forking a child
 	pid_t pid = fork();
 
 	if (pid == -1)
 	{
-		printf("\nFailed forking child...");
+		std::cout << "\nFailed forking child...";
 		return ;
 	}
 	else if (pid == 0)
 	{
-		if (execvp(parsed[0], parsed) < 0)
+		if (execvp(*parsed[0], parsed[0]) < 0)
 		{
-			printf("\nCould not execute command...");
+			std::cout << "\nCould not execute command...";
 		}
 		exit(0);
 	}
@@ -90,7 +93,8 @@ void execArgs(char** parsed)
 }
 
 // Function where piped system commands is executed
-void execArgsPiped(char** parsed, char** parsedpipe)
+//void execArgsPiped(char** parsed, char** parsedpipe)
+void execArgsPiped(std::vector<char **>parsed, std::vector<char **>parsedpipe)
 {
 	// 0 is read end, 1 is write end
 	int pipefd[2];
@@ -270,6 +274,7 @@ int processString(char* str, char** parsed, char** parsedpipe)
 int main()
 {
 	char inputString[MAXCOM], *parsedArgs[MAXLIST];
+	//std::vector<char**>parsedArgs[MAXLIST];
 	char* parsedArgsPiped[MAXLIST];
 	int execFlag = 0;
 	init_shell();
